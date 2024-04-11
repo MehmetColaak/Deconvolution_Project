@@ -1,4 +1,4 @@
-# Audio Signal Processing Tool
+# Audio Signal Deconvolution Tool
 
 This Python script calculates the deconvolution of audio signals to extract the impulse response from a recorded audio file using a reference file. It uses the `librosa`, `numpy`, `soundfile`, and `scipy` libraries for signal processing and the `tkinter` library for file dialogues.
 
