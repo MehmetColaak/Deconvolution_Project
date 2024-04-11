@@ -14,9 +14,9 @@ This Python script calculates the deconvolution of audio signals to extract the 
 ## Usage
 
 1. Run the script.
-2. When prompted, select your reference audio file through the file dialog.
-3. Next, select your recorded audio file.
-4. After processing, choose a location and name to save the extracted impulse response as a WAV file.
+2. Select your reference audio file through the file dialog.
+3. Select your recorded audio file.
+4. Choose a location and name to save the extracted impulse response as a WAV file.
 
 ## Notes
 
