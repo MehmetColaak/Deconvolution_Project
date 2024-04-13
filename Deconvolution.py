@@ -1,5 +1,3 @@
-import tkinter as tk
-from tkinter import filedialog
 import librosa as rosa
 import numpy as np
 import soundfile as sf
@@ -7,76 +5,51 @@ from scipy.signal import fftconvolve
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-def main():
-    
-    # Filedialog start
-    root = tk.Tk()
-    root.withdraw()
+class SignalProcess:
+    def __init__(self):
+        self.sr = None
+        self.impulse_response = None
+        self.file_path = None
 
-    # Terminal print texts for user input
-    print("Please select your reference file:")
-    reference_path = filedialog.askopenfilename(title="Reference Wave File")
-    print("Please select your recorded audio file:")
-    recorded_path = filedialog.askopenfilename(title="Recorded Wave File")
+    def signalProcess(self, reference_path, recorded_path, output_path):
 
-    if reference_path and recorded_path:
-        signalProcess(reference_path, recorded_path)
-        plotFig()
-    else:
-        print("File selection cancelled.")
+        # Loading reference and recorded file
+        ref_signal, self.sr = rosa.load(reference_path, sr=None, mono=True)
+        rec_signal, _ = rosa.load(recorded_path, sr=self.sr, mono=True)
 
-def signalProcess(reference_path, recorded_path):
+        # Deconvolution signal processing
+        self.impulse_response = fftconvolve(rec_signal, ref_signal[::-1], mode='full')
+        self.impulse_response /= np.abs(self.impulse_response).max()
+        self.impulse_response = self.impulse_response[len(ref_signal):]
 
-    # Loading reference and recorded file
-    global sr
-    ref_signal, sr = rosa.load(reference_path, sr=None, mono=True)
-    rec_signal, _ = rosa.load(recorded_path, sr=sr, mono=True)
+        # Save wav file
+        self.file_path = output_path
+        sf.write(self.file_path, self.impulse_response, self.sr)
 
-    # Deconvolution signal processing
-    global impulse_response
-    impulse_response = fftconvolve(rec_signal, ref_signal[::-1], mode='full')
-    impulse_response /= np.abs(impulse_response).max()
-    impulse_response = impulse_response[len(ref_signal):]
+    def plotFig(self):
+        # Ensure impulse_response is not None and contains data
+        if self.file_path and self.impulse_response is not None and len(self.impulse_response) > 0:
+            melSpec_IR = rosa.feature.melspectrogram(y=self.impulse_response, sr=self.sr, n_fft=2048, hop_length=512, n_mels=128)
+            Normalized_melSpec_IR = rosa.power_to_db(S=melSpec_IR, ref=np.max)
 
-    # File saveas dialog
-    global file_path
-    file_path = filedialog.asksaveasfilename(defaultextension=".wav", title="Save Impulse Response as Wave File")
+            fig = plt.figure(figsize=(20, 10))
+            grid = gridspec.GridSpec(2, 1, figure=fig)
 
-    print("Your IR is ready at: " + file_path)
-    sf.write(file_path, impulse_response, sr)
+            ax1 = fig.add_subplot(grid[0, 0])
+            ax2 = fig.add_subplot(grid[1, 0])
 
-def plotFig():
-    
-    # Global parameters initialized
-    global impulse_response, sr, file_path
+            ax1.plot(self.impulse_response)
+            ax1.set_title("Impulse Response Waveform")
+            ax1.set_xlabel("Sample")
+            ax1.set_ylabel("Amplitude")
 
-    melSpec_IR = rosa.feature.melspectrogram(y=impulse_response, sr=sr, n_fft=2048, hop_length=512, n_mels=128)
-    Normalized_melSpec_IR = rosa.power_to_db(S=melSpec_IR, ref=np.max)
+            rosa.display.specshow(Normalized_melSpec_IR, sr=self.sr, hop_length=512, x_axis='time', y_axis='mel', ax=ax2)
+            ax2.set_title("Impulse Response Mel Spectrogram")
+            ax2.set_xlabel("Time")
+            ax2.set_ylabel("Frequency")
 
-    # Setup the figure and subplots
-    fig = plt.figure(figsize=(20, 10))
-    grid = gridspec.GridSpec(2, 1, figure=fig)
-    
-    ax1 = fig.add_subplot(grid[0, 0])
-    ax2 = fig.add_subplot(grid[1, 0])
-
-    # Plot impulse response waveform
-    ax1.plot(impulse_response)
-    ax1.set_title("Impulse Response Waveform")
-    ax1.set_xlabel("Sample")
-    ax1.set_ylabel("Amplitude")
-
-    # Plot impulse response mel spectrogram
-    rosa.display.specshow(Normalized_melSpec_IR, sr=sr, hop_length=512, x_axis='time', y_axis='mel', ax=ax2)
-    ax2.set_title("Impulse Response Mel Spectrogram")
-    ax2.set_xlabel("Time")
-    ax2.set_ylabel("Frequency")
-    #plt.colorbar(mappable=ax2.collections[0], ax=ax2, format='%+2.0f dB')
-
-    # Save the figure
-    modified_filepath = file_path[:-4]
-    plt.savefig(modified_filepath + ".png")
-    plt.close()
-
-if __name__ == "__main__":
-    main()
+            modified_filepath = self.file_path[:-4] + ".png"
+            plt.savefig(modified_filepath)
+            plt.close()
+        else:
+            print("Missing impulse response or file path. Please run the signal process first.")
