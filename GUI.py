@@ -16,14 +16,14 @@ class AudioProcessorGUI:
         self.reference_path = None
         self.recorded_path = None
 
-        btnRef = tk.Button(master, text="Load Reference File", command=self.loadRef)
-        btnRef.pack(pady=20)
+        btnRef = tk.Button(master, text="Load Reference File", width=10, height=2, command=self.loadRef)
+        btnRef.place(x= 100, y=100)
 
-        btnRec = tk.Button(master, text="Load Recorded File", command=self.loadRec)
-        btnRec.pack(pady=20)
+        btnRec = tk.Button(master, text="Load Recorded File", width=10, height=2, command=self.loadRec)
+        btnRec.place(x= 380, y= 100)
 
-        self.btn_process = tk.Button(master, text="Start Deconvolution", command=self.signalFiles)
-        self.btn_process.pack(pady=20)
+        self.btn_process = tk.Button(master, text="Start Deconvolution", width=20, height=4, command=self.signalFiles)
+        self.btn_process.place(x= 200, y= 250)
         self.btn_process["state"] = "disabled"
 
 
