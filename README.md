@@ -12,6 +12,14 @@ This Python script calculates the deconvolution of audio signals to extract the 
 - matplotlib
 - tkinter
 
+## Installation
+
+To install the required dependencies, you can use pip. Run the following command:
+
+`pip install -r requirements.txt`
+
+This will install all the necessary libraries listed in the `requirements.txt` file.
+
 ## Usage
 
 1. Run the script.
